@@ -15,11 +15,11 @@ foursquare_version = '20170101'
 
 def findARestaurant(mealType,location):
     print
+    print
     print 'Request:', mealType, location
-
+    print
 	#1. Use getGeocodeLocation to get the latitude and longitude coordinates of the location string.
     lat, lng = getGeocodeLocation(location)
-    print 'Geo location:', lat, lng
 
 	#2.  Use foursquare API to find a nearby restaurant with the latitude, longitude, and mealType strings.
 	#HINT: format for url will be something like https://api.foursquare.com/v2/venues/search?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815&ll=40.7,-74&query=sushi
@@ -29,11 +29,22 @@ def findARestaurant(mealType,location):
     restaurant = restaurants['venues'][0]
 
 	#4. Get a  300x300 picture of the restaurant using the venue_id (you can change this by altering the 300x300 value in the URL or replacing it with 'orginal' to get the original picture
-    restaurant_img_url = getRestaurantImageUrl(restaurant['id'])
+    restaurant_photos = getRestaurantImageUrl(restaurant['id'])
 
 	#5. Grab the first image
 	#6. If no image is available, insert default a image url
+    # Default image
+    image_url = 'http://pixabay.com/get/8926af5eb597ca51ca4c/1433440765/cheeseburger-34314_1280.png?direct'
+
+    # Set restaurant image
+    if restaurant_photos['count'] > 0:
+        image = restaurant_photos['items'][0]
+        image_url = image['prefix'] + '300x300' + image['suffix']
+
 	#7. Return a dictionary containing the restaurant name, address, and image url
+    print 'Restaurant Name:', restaurant['name']
+    print 'Restaurant Address:', ', '.join(restaurant['location']['formattedAddress'])
+    print 'Image:', image_url
 
 def findNearbyRestaurants(mealType, lat, lng):
     url = appendForesquareAuthParameters(('https://api.foursquare.com/v2/venues/search?ll=%s,%s&query=%s'%
@@ -41,7 +52,6 @@ def findNearbyRestaurants(mealType, lat, lng):
 
     h = httplib2.Http()
     result = json.loads(h.request(url,'GET')[1])
-    print 'Url:', url
     return result['response']
 
 def getRestaurantImageUrl(venue_id):
@@ -51,16 +61,7 @@ def getRestaurantImageUrl(venue_id):
     result = json.loads(h.request(url,'GET')[1])
     photos = result['response']['photos']
 
-    # Default image
-    image_url = 'http://pixabay.com/get/8926af5eb597ca51ca4c/1433440765/cheeseburger-34314_1280.png?direct'
-
-    # Set restaurant image
-    if photos['count'] > 0:
-        image = photos['items'][0]
-        image_url = image['prefix'] + '300x300' + image['suffix']
-
-    print 'Image url:', image_url
-    return result
+    return photos
 
 
 def appendForesquareAuthParameters(url):
