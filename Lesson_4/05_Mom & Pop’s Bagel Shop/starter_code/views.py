@@ -16,6 +16,18 @@ session = DBSession()
 app = Flask(__name__)
 
 #ADD @auth.verify_password here
+@auth.verify_password
+def verifyPassword(username, password):
+    print 'verify:', username
+    user = session.query(User).filter_by(username = username).first()
+    if user is None:
+        print 'user is none'
+        return False
+    elif not user.verify_password(password):
+        print 'wrong password'
+        return False
+    g.user = user
+    return True
 
 #ADD a /users route here
 @app.route('/users', methods=['POST'])
@@ -39,7 +51,7 @@ def newUser():
 
 
 @app.route('/bagels', methods = ['GET','POST'])
-#protect this route with a required login
+@auth.login_required
 def showAllBagels():
     if request.method == 'GET':
         bagels = session.query(Bagel).all()
