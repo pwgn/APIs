@@ -36,8 +36,8 @@ def findARestaurant(mealType,location):
 	#7. Return a dictionary containing the restaurant name, address, and image url
 
 def findNearbyRestaurants(mealType, lat, lng):
-    url = ('https://api.foursquare.com/v2/venues/search?ll=%s,%s&query=%s&v=%s&client_id=%s&client_secret=%s'%
-               (lat, lng, mealType, foursquare_version, foursquare_client_id, foursquare_client_secret))
+    url = appendForesquareAuthParameters(('https://api.foursquare.com/v2/venues/search?ll=%s,%s&query=%s'%
+               (lat, lng, mealType)))
 
     h = httplib2.Http()
     result = json.loads(h.request(url,'GET')[1])
@@ -46,7 +46,7 @@ def findNearbyRestaurants(mealType, lat, lng):
 
 def getRestaurantImageUrl(venue_id):
     img_size = '300x300'
-    url = ('https://api.foursquare.com/v2/venues/%s/photos?&v=%s&client_id=%s&client_secret=%s'% (venue_id, foursquare_version, foursquare_client_id, foursquare_client_secret))
+    url = appendForesquareAuthParameters('https://api.foursquare.com/v2/venues/%s/photos?'% (venue_id))
     h = httplib2.Http()
     result = json.loads(h.request(url,'GET')[1])
     photos = result['response']['photos']
@@ -61,6 +61,13 @@ def getRestaurantImageUrl(venue_id):
 
     print 'Image url:', image_url
     return result
+
+
+def appendForesquareAuthParameters(url):
+    auth_url = (url + '&v=%s&client_id=%s&client_secret=%s'%
+                    (foursquare_version, foursquare_client_id, foursquare_client_secret))
+
+    return auth_url
 
 if __name__ == '__main__':
 	findARestaurant("Pizza", "Tokyo, Japan")
