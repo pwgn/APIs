@@ -26,9 +26,11 @@ def findARestaurant(mealType,location):
     restaurants = findNearbyRestaurants(mealType, lat, lng)
 
 	#3. Grab the first restaurant
-    restaurant = restaurants['response']['venues'][0]
+    restaurant = restaurants['venues'][0]
 
 	#4. Get a  300x300 picture of the restaurant using the venue_id (you can change this by altering the 300x300 value in the URL or replacing it with 'orginal' to get the original picture
+    restaurant_img_url = getRestaurantImageUrl(restaurant['id'])
+
 	#5. Grab the first image
 	#6. If no image is available, insert default a image url
 	#7. Return a dictionary containing the restaurant name, address, and image url
@@ -40,6 +42,24 @@ def findNearbyRestaurants(mealType, lat, lng):
     h = httplib2.Http()
     result = json.loads(h.request(url,'GET')[1])
     print 'Url:', url
+    return result['response']
+
+def getRestaurantImageUrl(venue_id):
+    img_size = '300x300'
+    url = ('https://api.foursquare.com/v2/venues/%s/photos?&v=%s&client_id=%s&client_secret=%s'% (venue_id, foursquare_version, foursquare_client_id, foursquare_client_secret))
+    h = httplib2.Http()
+    result = json.loads(h.request(url,'GET')[1])
+    photos = result['response']['photos']
+
+    # Default image
+    image_url = 'http://pixabay.com/get/8926af5eb597ca51ca4c/1433440765/cheeseburger-34314_1280.png?direct'
+
+    # Set restaurant image
+    if photos['count'] > 0:
+        image = photos['items'][0]
+        image_url = image['prefix'] + '300x300' + image['suffix']
+
+    print 'Image url:', image_url
     return result
 
 if __name__ == '__main__':
