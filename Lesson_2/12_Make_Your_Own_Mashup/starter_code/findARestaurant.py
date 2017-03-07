@@ -26,6 +26,9 @@ def findARestaurant(mealType,location):
     restaurants = findNearbyRestaurants(mealType, lat, lng)
 
 	#3. Grab the first restaurant
+    if not restaurants['venues']:
+        return 'No restaurants found'
+
     restaurant = restaurants['venues'][0]
 
 	#4. Get a  300x300 picture of the restaurant using the venue_id (you can change this by altering the 300x300 value in the URL or replacing it with 'orginal' to get the original picture
