@@ -49,7 +49,42 @@ def start():
 
 @app.route('/oauth/<provider>', methods = ['POST'])
 def login(provider):
-    pass
+    auth_token = request.json.get('auth_code')
+    if provider == 'google':
+        try:
+            oauth_flow = flow_from_clientsecrets('client_secret_989899533517-a24gggrpsg9jqn2ouqqabmohc3hbq13u.apps.googleusercontent.com.json', scope='')
+            oauth_flow.redirect_uri = 'postmessage'
+            credentials = oauth_flow.step2_exchange(auth_token)
+        except FlowExchangeError:
+            return 'Failed to upgrade auth code', 401
+
+        access_token = credentials['access_token']
+
+        # get user info
+        userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+        params = {'access_token': credentials.access_token, 'alt': 'json'}
+        answer = requests.get(userinfo_url, params=params)
+        userinfo = answer.json()
+
+        # get or create user
+        user = session.query(User).filter_by(email=userinfo['email']).one_or_none()
+        if user is None:
+            # create user
+            newUser = User(
+                name=userinfo['username'],
+                email=userinfo['email'],
+                picture=userinfo['picture'])
+
+            session.add(newUser)
+            session.commit()
+            user = session.query(User).filter_by(email=userinfo['email']).one()
+
+        token = user.generate_auth_token()
+        return jsonify({'token': token.decode('ascii')})
+
+    else:
+        return 'unkown provider'
+
 
 @app.route('/token')
 @auth.login_required
