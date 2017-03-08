@@ -22,9 +22,25 @@ class User(Base):
 
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
+
     #Add a method to generate auth tokens here
-    
+    def generate_token(self, experation=600):
+        s = Serializer(secret_key, expires_in=experation)
+        return s.dumps({'id': self.id})
+
     #Add a method to verify auth tokens here
+    @staticmethod
+    def verify_token(token):
+        s = Serializer(secret_key)
+        try:
+            data = s.loads(token)
+        except BadSignature as e:
+            print 'verify_token bad sign error:', e
+            return None
+        except SignatureExpired as e:
+            print 'verify_token expired error:', e
+            return None
+        return data['id']
 
 class Product(Base):
     __tablename__ = 'product'
@@ -42,7 +58,6 @@ class Product(Base):
             }
 
 engine = create_engine('sqlite:///regalTree.db')
- 
+
 
 Base.metadata.create_all(engine)
-    
