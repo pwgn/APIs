@@ -1,0 +1,7 @@
+werkzeug
+flask
+requests
+redis
+sqlalchemy
+passlib
+httplib2
